@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gramvistaar AI — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2ECDA;
+    --paper-deep:#E9E0C7;
+    --ink:#241F16;
+    --ink-soft:#5C5344;
+    --indigo:#1F3A5F;
+    --indigo-deep:#152A47;
+    --marigold:#E2A23B;
+    --marigold-deep:#C6851F;
+    --leaf:#3F6B4C;
+    --leaf-soft:#DCE8DE;
+    --clay:#B4552F;
+    --clay-soft:#F3DDCF;
+    --line: rgba(36,31,22,0.14);
+    --shadow: 0 18px 40px rgba(21,42,71,0.16);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 18%, rgba(31,58,95,0.06), transparent 40%),
+      radial-gradient(circle at 88% 82%, rgba(226,162,59,0.10), transparent 45%),
+      var(--paper);
+    font-family:'Work Sans', 'Noto Sans Devanagari', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding: 36px 20px 60px;
+  }
+
+  /* ---------- Header ---------- */
+  .brand-row{
+    max-width:1180px;
+    margin:0 auto 30px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+    border-bottom:1.5px solid var(--line);
+    padding-bottom:22px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .brand-mark{
+    width:46px;height:46px;border-radius:50%;
+    background:var(--indigo);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;flex-shrink:0;
+  }
+  .brand-mark svg{width:24px;height:24px;}
+  .brand h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:29px;
+    margin:0;
+    letter-spacing:-0.01em;
+    line-height:1;
+  }
+  .brand p{
+    margin:6px 0 0;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    max-width:420px;
+  }
+  .brand-tag{
+    font-size:12.5px;
+    color:var(--indigo);
+    background:rgba(31,58,95,0.08);
+    border:1px solid rgba(31,58,95,0.18);
+    padding:6px 12px;
+    border-radius:100px;
+    white-space:nowrap;
+  }
+
+  /* ---------- Layout: journey rail + phone ---------- */
+  .stage{
+    max-width:1180px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:260px 1px 1fr 300px;
+    gap:34px;
+    align-items:start;
+  }
+  @media (max-width:980px){
+    .stage{grid-template-columns:1fr;}
+    .rail{order:2;}
+    .divider{display:none;}
+    .side-panel{order:3;}
+  }
+
+  /* ---------- Journey rail ---------- */
+  .rail{position:sticky; top:30px;}
+  .rail-label{
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .rail-path{position:relative; padding-left:26px;}
+  .rail-path::before{
+    content:"";
+    position:absolute;
+    left:9px; top:6px; bottom:6px;
+    width:2px;
+    background-image: linear-gradient(var(--line) 60%, transparent 0%);
+    background-size: 2px 10px;
+    background-repeat: repeat-y;
+  }
+  .rail-step{
+    position:relative;
+    padding:9px 0 9px 18px;
+    cursor:pointer;
+    display:block;
+    text-align:left;
+    background:none;
+    border:none;
+    width:100%;
+    font-family:'Work Sans', sans-serif;
+  }
+  .rail-step::before{
+    content:"";
+    position:absolute;
+    left:-26px; top:14px;
+    width:11px; height:11px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--ink-soft);
+    opacity:0.55;
+  }
+  .rail-step .num{
+    font-size:11px;
+    color:var(--ink-soft);
+    display:block;
+  }
+  .rail-step .title{
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    display:block;
+    margin-top:1px;
+  }
+  .rail-step.active::before{
+    background:var(--marigold);
+    border-color:var(--marigold-deep);
+    opacity:1;
+    box-shadow:0 0 0 4px rgba(226,162,59,0.22);
+  }
+  .rail-step.active .num{color:var(--marigold-deep);}
+  .rail-step.active .title{color:var(--ink);}
+  .rail-step.done::before{background:var(--leaf); border-color:var(--leaf); opacity:1;}
+
+  .divider{background:var(--line); align-self:stretch;}
+
+  /* ---------- Phone frame ---------- */
+  .phone-wrap{display:flex; flex-direction:column; align-items:center;}
+  .phone{
+    width:380px;
+    max-width:100%;
+    background:#fff;
+    border-radius:34px;
+    border:1px solid rgba(36,31,22,0.10);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+  }
+  .phone-notch{
+    height:26px;
+    background:var(--indigo-deep);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .phone-notch::after{
+    content:"";
+    width:70px;height:6px;border-radius:10px;
+    background:rgba(255,255,255,0.35);
+  }
+  .app-bar{
+    background:var(--indigo);
+    color:#fff;
+    padding:16px 20px 18px;
+  }
+  .app-bar .eyebrow{
+    font-size:11.5px;
+    color:rgba(255,255,255,0.7);
+    margin:0 0 4px;
+  }
+  .app-bar h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .screen-body{
+    padding:22px 20px 26px;
+    min-height:480px;
+    background:#FDFCF8;
+  }
+  .screen{display:none;}
+  .screen.active{display:block; animation:rise 0.35s ease;}
+  @keyframes rise{
+    from{opacity:0; transform:translateY(8px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  .field-label{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+  }
+  .chip-row{display:flex; flex-wrap:wrap; gap:9px; margin-bottom:20px;}
+  .chip{
+    padding:9px 15px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    color:var(--ink);
+    transition:border-color .15s, background .15s;
+  }
+  .chip:hover{border-color:var(--indigo);}
+  .chip.selected{
+    background:var(--indigo);
+    border-color:var(--indigo);
+    color:#fff;
+  }
+  .chip.marigold.selected{background:var(--marigold-deep); border-color:var(--marigold-deep);}
+
+  .mode-toggle{
+    display:flex;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .mode-toggle button{
+    flex:1;
+    padding:12px;
+    background:#fff;
+    border:none;
+    font-family:'Work Sans';
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .mode-toggle button.active{background:var(--leaf-soft); color:var(--leaf);}
+
+  .text-input{
+    width:100%;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:13px 14px;
+    font-family:'Work Sans', 'Noto Sans Devanagari';
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+    margin-bottom:6px;
+  }
+  .hint{font-size:12px; color:var(--ink-soft); margin:0 0 18px;}
+
+  .mic-btn{
+    width:100%;
+    padding:16px;
+    border-radius:12px;
+    border:1.5px dashed var(--indigo);
+    background:rgba(31,58,95,0.05);
+    color:var(--indigo);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    margin-bottom:18px;
+    text-align:center;
+  }
+
+  .primary-btn{
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    background:var(--indigo);
+    color:#fff;
+    font-family:'Work Sans';
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .primary-btn:hover{background:var(--indigo-deep);}
+  .ghost-btn{
+    width:100%;
+    padding:13px;
+    border-radius:12px;
+    border:1.5px solid var(--line);
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:'Work Sans';
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    margin-top:10px;
+  }
+
+  .decision-card{
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:13px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .decision-card:hover{border-color:var(--indigo);}
+  .decision-card.chosen{border-color:var(--marigold-deep); background:#FBF3E4;}
+  .decision-card .k{font-size:11px; font-weight:700; letter-spacing:.05em; color:var(--marigold-deep);}
+  .decision-card h3{margin:5px 0 4px; font-family:'Fraunces'; font-size:16.5px; font-weight:600;}
+  .decision-card p{margin:0; font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
+
+  /* chain-segment detection panel */
+  .chain-panel{margin:2px 0 16px; padding-top:12px; border-top:1px dashed var(--line);}
+  .segment-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px; gap:10px;
+  }
+  .segment-row:last-of-type{border-bottom:none;}
+  .seg-l{color:var(--ink-soft);}
+  .seg-status{display:flex; align-items:center; gap:6px; font-weight:600; text-align:right;}
+  .seg-status .dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+  .seg-status.ok{color:var(--leaf);} .seg-status.ok .dot{background:var(--leaf);}
+  .seg-status.warn{color:var(--clay);} .seg-status.warn .dot{background:var(--clay);}
+  .seg-status.gap{color:var(--marigold-deep);} .seg-status.gap .dot{background:var(--marigold-deep);}
+
+  .chain-suggestion{
+    background:#FBF3E4; border:1.5px solid var(--marigold-deep); border-radius:12px;
+    padding:12px 13px; margin:14px 0 10px;
+  }
+  .chain-suggestion .tag{
+    font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--marigold-deep); display:block; margin-bottom:5px;
+  }
+  .chain-suggestion p{margin:0; font-size:12.5px; line-height:1.5; color:var(--ink);}
+  .gap-note{font-size:11.5px; color:var(--clay); margin:8px 0 0; font-style:italic; line-height:1.4;}
+
+  .alt-biz-card{
+    border:1.5px solid var(--indigo); border-radius:12px; padding:13px 14px;
+    margin:12px 0 10px; background:#EEF2F7;
+  }
+  .alt-biz-card .tag{
+    font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--indigo); display:block; margin-bottom:5px;
+  }
+  .alt-biz-card h4{margin:0 0 4px; font-family:'Fraunces'; font-size:15px; font-weight:600;}
+  .alt-biz-card p{margin:0; font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
+
+  .link-btn{
+    background:none; border:none; padding:2px 0; color:var(--indigo);
+    font-family:'Work Sans'; font-weight:600; font-size:12.5px; cursor:pointer;
+    text-decoration:underline; text-underline-offset:2px;
+  }
+
+  /* report bits */
+  .status-badge{
+    display:inline-flex; align-items:center; gap:7px;
+    padding:6px 13px; border-radius:100px;
+    background:var(--leaf-soft); color:var(--leaf);
+    font-size:12.5px; font-weight:600; margin-bottom:18px;
+  }
+  .status-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--leaf);}
+
+  .score-row{display:flex; align-items:center; gap:18px; margin-bottom:22px;}
+  .score-ring{
+    width:88px;height:88px; border-radius:50%; flex-shrink:0;
+    background: conic-gradient(var(--marigold) 0turn 0.74turn, var(--paper-deep) 0turn);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .score-ring::after{
+    content:"";
+    position:absolute; width:66px; height:66px; border-radius:50%;
+    background:#FDFCF8;
+  }
+  .score-ring span{
+    position:relative; z-index:1;
+    font-family:'Fraunces'; font-weight:700; font-size:20px;
+  }
+  .score-copy h3{margin:0 0 4px; font-family:'Fraunces'; font-size:16.5px;}
+  .score-copy p{margin:0; font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
+
+  .swot-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:20px;}
+  .swot-cell{border-radius:12px; padding:12px 13px;}
+  .swot-cell h4{margin:0 0 5px; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em;}
+  .swot-cell p{margin:0; font-size:12px; line-height:1.5;}
+  .swot-cell.s{background:var(--leaf-soft);} .swot-cell.s h4{color:var(--leaf);}
+  .swot-cell.w{background:var(--clay-soft);} .swot-cell.w h4{color:var(--clay);}
+  .swot-cell.o{background:#E4EAF2;} .swot-cell.o h4{color:var(--indigo);}
+  .swot-cell.t{background:#F3EEDD;} .swot-cell.t h4{color:var(--marigold-deep);}
+
+  .list-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 0; border-bottom:1px solid var(--line); font-size:13px; gap:10px;
+  }
+  .list-row:last-child{border-bottom:none;}
+  .list-row .l{color:var(--ink-soft);}
+  .list-row .v{font-weight:600; text-align:right;}
+
+  /* finance */
+  .slider-block{margin-bottom:20px;}
+  .slider-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px; gap:10px;}
+  .slider-top .amt{font-family:'Fraunces'; font-size:19px; font-weight:600; color:var(--indigo);}
+  input[type=range]{
+    width:100%; accent-color:var(--marigold-deep); height:4px;
+  }
+  .finance-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0;}
+  .finance-card{
+    border:1.5px solid var(--line); border-radius:12px; padding:13px;
+  }
+  .finance-card .lab{font-size:11px; color:var(--ink-soft); margin-bottom:5px;}
+  .finance-card .num{font-family:'Fraunces'; font-size:17px; font-weight:600;}
+  .scheme-card{
+    border-radius:12px; padding:13px 14px; margin-bottom:10px;
+    border:1.5px solid var(--line); cursor:pointer; transition:border-color .15s, box-shadow .15s;
+  }
+  .scheme-card.rec{border-color:var(--marigold-deep); background:#FBF3E4;}
+  .scheme-card.selected{border-color:var(--indigo); box-shadow:0 0 0 2px rgba(31,58,95,0.14);}
+  .scheme-card .top{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:10px;}
+  .scheme-card .name-wrap{display:flex; align-items:center; gap:7px;}
+  .scheme-card .name{font-weight:700; font-size:13.5px;}
+  .scheme-card .terms{font-size:11.5px; color:var(--ink-soft);}
+  .rec-pill{
+    font-size:9px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:#fff; background:var(--marigold-deep); padding:2px 7px; border-radius:100px;
+    display:none;
+  }
+  .scheme-card.rec .rec-pill{display:inline-block;}
+  .scheme-analysis{margin-top:2px;}
+
+  /* final tabs */
+  .tab-row{display:flex; gap:6px; margin-bottom:16px; overflow-x:auto; padding-bottom:2px;}
+  .tab-btn{
+    flex-shrink:0; padding:8px 13px; border-radius:100px; border:1.5px solid var(--line);
+    background:#fff; font-size:12px; font-weight:600; color:var(--ink-soft); cursor:pointer;
+  }
+  .tab-btn.active{background:var(--indigo); border-color:var(--indigo); color:#fff;}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block; animation:rise 0.3s ease;}
+  .rec-banner{
+    background:var(--leaf); color:#fff; border-radius:12px; padding:15px 16px; margin-bottom:16px;
+  }
+  .rec-banner .k{font-size:11px; opacity:0.85; margin-bottom:4px;}
+  .rec-banner h3{margin:0; font-family:'Fraunces'; font-size:18px;}
+
+  .map-mock{
+    border-radius:12px; overflow:hidden; border:1.5px solid var(--line); margin-bottom:16px;
+    background:#EEF1E6; height:160px; position:relative;
+  }
+  .map-mock svg{width:100%; height:100%;}
+
+  /* ---------- side panel ---------- */
+  .side-panel{position:sticky; top:30px;}
+  .side-card{
+    background:#fff; border:1.5px solid var(--line); border-radius:16px;
+    padding:20px 20px 22px; margin-bottom:16px;
+  }
+  .side-card h4{
+    font-family:'Fraunces'; font-size:15px; margin:0 0 10px; font-weight:600;
+  }
+  .side-card p{font-size:12.5px; line-height:1.6; color:var(--ink-soft); margin:0;}
+  .side-card ul{margin:8px 0 0; padding-left:18px;}
+  .side-card li{font-size:12.5px; line-height:1.7; color:var(--ink-soft);}
+  .note-tag{
+    display:inline-block; font-size:11px; font-weight:700; color:var(--marigold-deep);
+    text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="brand-row">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M12 3l8 5v7l-8 5-8-5V8l8-5z"/><path d="M12 3v18M4 8l8 5 8-5"/></svg>
+      </div>
+      <div>
+        <h1>Gramvistaar AI</h1>
+        <p>Prototype for hyper-local business advisory &amp; financial structuring for rural micro-entrepreneurs</p>
+      </div>
+    </div>
+    <div class="brand-tag">Team Ventro · SIH 2026 · PS 26091</div>
+  </div>
+
+  <div class="stage">
+
+    <!-- journey rail -->
+    <div class="rail">
+      <div class="rail-label">Walkthrough</div>
+      <div class="rail-path" id="railPath">
+        <button class="rail-step" data-screen="lang"><span class="num">01</span><span class="title">Language &amp; mode</span></button>
+        <button class="rail-step" data-screen="onboard"><span class="num">02</span><span class="title">Location &amp; capital</span></button>
+        <button class="rail-step" data-screen="idea"><span class="num">03</span><span class="title">Business idea</span></button>
+        <button class="rail-step" data-screen="decision"><span class="num">04</span><span class="title">New or existing?</span></button>
+        <button class="rail-step" data-screen="report"><span class="num">05</span><span class="title">Feasibility report</span></button>
+        <button class="rail-step" data-screen="finance"><span class="num">06</span><span class="title">Financial engine</span></button>
+        <button class="rail-step" data-screen="final"><span class="num">07</span><span class="title">Personalized report</span></button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- phone -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+
+        <!-- SCREEN 1: language -->
+        <div class="screen active" data-screen="lang">
+          <div class="app-bar">
+            <p class="eyebrow" data-i18n="welcome_eyebrow">Welcome</p>
+            <h2 data-i18n="welcome_title">Let's set up your advisor</h2>
+          </div>
+          <div class="screen-body">
+            <p class="field-label" data-i18n="choose_lang">Choose your language</p>
+            <div class="chip-row" id="langChips">
+              <div class="chip selected" data-lang="en">English</div>
+              <div class="chip" data-lang="hi">हिंदी</div>
+              <div class="chip" data-lang="mr">मराठी</div>
+              <div class="chip" data-lang="en" data-nontarget="true">+ Regional</div>
+            </div>
+
+            <p class="field-label" data-i18n="talk_mode_label">How would you like to talk to Gramvistaar?</p>
+            <div class="mode-toggle" id="modeToggle">
+              <button class="active" data-mode="voice" data-i18n="mode_voice">🎙️ Voice</button>
+              <button data-mode="text" data-i18n="mode_text">⌨️ Text</button>
+            </div>
+
+            <button class="primary-btn" data-i18n="continue_btn" onclick="goTo('onboard')" style="margin-top:6px;">Continue</button>
+          </div>
+        </div>
+
+        <!-- SCREEN 2: onboarding -->
+        <div class="screen" data-screen="onboard">
+          <div class="app-bar">
+            <p class="eyebrow" data-i18n="step2_eyebrow">Step 2 of 7</p>
+            <h2 data-i18n="step2_title">Tell us where &amp; how much</h2>
+          </div>
+          <div class="screen-body">
+            <p class="field-label" data-i18n="village_label">Village / Gram Panchayat</p>
+            <input class="text-input" data-i18n-value="village_value" value="Kondhali, Nagpur Block" />
+            <p class="hint" data-i18n="village_hint">We'll use your phone's GPS to pull local demand, roads and competitor data for a 5–10 km radius.</p>
+
+            <p class="field-label" data-i18n="capital_label">Capital available for investment</p>
+            <input class="text-input" value="₹1,00,000" />
+            <p class="hint" data-i18n="capital_hint">This sets your maximum project size and loan eligibility.</p>
+
+            <button class="primary-btn" data-i18n="continue_btn" onclick="goTo('idea')">Continue</button>
+            <button class="ghost-btn" data-i18n="back_btn" onclick="goTo('lang')">Back</button>
+          </div>
+        </div>
+
+        <!-- SCREEN 3: idea -->
+        <div class="screen" data-screen="idea">
+          <div class="app-bar">
+            <p class="eyebrow" data-i18n="step3_eyebrow">Step 3 of 7</p>
+            <h2 data-i18n="step3_title">Describe your business idea</h2>
+          </div>
+          <div class="screen-body">
+            <button class="mic-btn" data-i18n="mic_btn" onclick="revealTags()">🎙️ Tap and speak — "I want to start a dairy business"</button>
+            <p class="hint" data-i18n="or_type_hint" style="margin-top:-10px;">Or type instead —</p>
+            <input class="text-input" data-i18n-value="idea_input_value" value="I want to start a dairy business — milk and paneer" style="margin-bottom:18px;" />
+
+            <div id="nlpTags" style="display:none;">
+              <p class="field-label" data-i18n="nlp_understood_label">Gramvistaar understood:</p>
+              <div class="chip-row">
+                <div class="chip marigold selected" data-i18n="tag_category">Category: Agriculture</div>
+                <div class="chip marigold selected" data-i18n="tag_subcategory">Subcategory: Dairy</div>
+                <div class="chip marigold selected" data-i18n="tag_product">Product: Milk, Paneer</div>
+              </div>
+            </div>
+
+            <button class="primary-btn" data-i18n="continue_btn" onclick="goTo('decision')">Continue</button>
+            <button class="ghost-btn" data-i18n="back_btn" onclick="goTo('onboard')">Back</button>
+          </div>
+        </div>
+
+        <!-- SCREEN 4: decision -->
+        <div class="screen" data-screen="decision">
+          <div class="app-bar">
+            <p class="eyebrow" data-i18n="step4_eyebrow">Step 4 of 7</p>
+            <h2 data-i18n="step4_title">Is this already running?</h2>
+          </div>
+          <div class="screen-body">
+            <div class="decision-card chosen" onclick="chooseDecision(this,'no')">
+              <span class="k" data-i18n="decision_no_k">NO — NEW IDEA</span>
+              <h3 data-i18n="decision_no_h3">Potential market gap</h3>
+              <p data-i18n="decision_no_p">We'll scan your value chain for unserved niches and estimate a fresh opportunity around dairy in Kondhali.</p>
+            </div>
+            <div class="decision-card" onclick="chooseDecision(this,'yes')">
+              <span class="k" data-i18n="decision_yes_k">YES — RUNNING ALREADY</span>
+              <h3 data-i18n="decision_yes_h3">Existing business analysis</h3>
+              <p data-i18n="decision_yes_p">We'll check which parts of your producer → consumer chain are actually active — not assume the full chain exists — then flag any overcrowded segment or suggest a similar alternative if none connects.</p>
+            </div>
+
+            <div class="chain-panel" id="chainPanel" style="display:none;">
+              <p class="field-label" data-i18n="chain_check_label">Chain connection check</p>
+              <p class="hint" data-i18n="chain_check_hint" style="margin-top:-4px;">Every business doesn't run the full producer → wholesaler → retailer → consumer chain — here's what we found for yours.</p>
+
+              <div id="chainScenarioA">
+                <div class="segment-row"><span class="seg-l" data-i18n="seg1_l">Producer → Processor</span><span class="seg-status ok"><span class="dot"></span><span data-i18n="seg1_v">Active</span></span></div>
+                <div class="segment-row"><span class="seg-l" data-i18n="seg2_l">Processor → Wholesaler</span><span class="seg-status ok"><span class="dot"></span><span data-i18n="seg2_v">Active</span></span></div>
+                <div class="segment-row"><span class="seg-l" data-i18n="seg3_l">Wholesaler → Retailer</span><span class="seg-status warn"><span class="dot"></span><span data-i18n="seg3_v">Saturated · 7 sellers within 5 km</span></span></div>
+                <div class="segment-row"><span class="seg-l" data-i18n="seg4_l">Retailer → Consumer</span><span class="seg-status gap"><span class="dot"></span><span data-i18n="seg4_v">Underserved · gap found</span></span></div>
+
+                <div class="chain-suggestion">
+                  <span class="tag" data-i18n="suggested_label">Suggested for you</span>
+                  <p data-i18n="chain_suggest_a">Wholesaler → Retailer is overcrowded near Kondhali. Consider skipping it and selling paneer directly to households (Retailer → Consumer) instead.</p>
+                </div>
+
+                <button class="link-btn" data-i18n="chain_toggle_to_b" onclick="toggleChainScenario('b')">See what happens when no chain exists →</button>
+              </div>
+
+              <div id="chainScenarioB" style="display:none;">
+                <p class="hint" data-i18n="chain_no_chain_p" style="margin-top:0;">No active dairy value-chain segments were detected around Kondhali for this business.</p>
+                <div class="alt-biz-card">
+                  <span class="tag" data-i18n="alt_biz_label">Similar-investment alternative</span>
+                  <h4 data-i18n="alt_biz_name">Poultry &amp; egg retail</h4>
+                  <p data-i18n="alt_biz_detail">Project cost ≈ ₹9.6L — close to your dairy plan, with an active local chain within 4 km.</p>
+                </div>
+                <button class="link-btn" data-i18n="chain_toggle_to_a" onclick="toggleChainScenario('a')">← Back to the segment example</button>
+              </div>
+            </div>
+
+            <button class="primary-btn" data-i18n="see_report_btn" onclick="goTo('report')" style="margin-top:8px;">See feasibility report</button>
+            <button class="ghost-btn" data-i18n="back_btn" onclick="goTo('idea')">Back</button>
+          </div>
+        </div>
+
+        <!-- SCREEN 5: report -->
+        <div class="screen" data-screen="report">
+          <div class="app-bar">
+            <p class="eyebrow" data-i18n="step5_eyebrow">Step 5 of 7</p>
+            <h2 data-i18n="step5_title">Feasibility report</h2>
+          </div>
+          <div class="screen-body">
+            <div class="status-badge"><span class="dot"></span> <span data-i18n="market_status">Market status: Opportunity</span></div>
+
+            <div class="score-row">
+              <div class="score-ring"><span>74</span></div>
+              <div class="score-copy">
+                <h3 data-i18n="viability_h3">Viability score</h3>
+                <p data-i18n="viability_p">Above-average demand, moderate competition, raw material access within 4 km.</p>
+              </div>
+            </div>
+
+            <div class="swot-grid">
+              <div class="swot-cell s"><h4 data-i18n="swot_s_title">Strengths</h4><p data-i18n="swot_s_p">Low competitor density, road access to 3 nearby villages</p></div>
+              <div class="swot-cell w"><h4 data-i18n="swot_w_title">Weaknesses</h4><p data-i18n="swot_w_p">No cold storage nearby, seasonal milk supply dips</p></div>
+              <div class="swot-cell o"><h4 data-i18n="swot_o_title">Opportunities</h4><p data-i18n="swot_o_p">Festival demand spikes, unmet paneer supply</p></div>
+              <div class="swot-cell t"><h4 data-i18n="swot_t_title">Threats</h4><p data-i18n="swot_t_p">Price undercutting by mobile milk vendors</p></div>
+            </div>
+
+            <p class="field-label" data-i18n="risk_label">Risk &amp; mitigation</p>
+            <div class="list-row"><span class="l" data-i18n="risk1_l">Perishability risk</span><span class="v" data-i18n="risk1_v">Add small chiller unit</span></div>
+            <div class="list-row"><span class="l" data-i18n="risk2_l">Seasonal demand dip</span><span class="v" data-i18n="risk2_v">Diversify into ghee, curd</span></div>
+
+            <button class="primary-btn" data-i18n="continue_finance_btn" onclick="goTo('finance')" style="margin-top:16px;">Continue to financial engine</button>
+            <button class="ghost-btn" data-i18n="back_btn" onclick="goTo('decision')">Back</button>
+          </div>
+        </div>
+
+        <!-- SCREEN 6: finance -->
+        <div class="screen" data-screen="finance">
+          <div class="app-bar">
+            <p class="eyebrow" data-i18n="step6_eyebrow">Step 6 of 7</p>
+            <h2 data-i18n="step6_title">Smart financial engine</h2>
+          </div>
+          <div class="screen-body">
+            <div class="slider-block">
+              <div class="slider-top">
+                <span class="field-label" data-i18n="avail_capital_label" style="margin:0;">Available capital</span>
+                <span class="amt" id="capOut">₹1,00,000</span>
+              </div>
+              <input type="range" id="capSlider" min="10000" max="500000" step="5000" value="100000" oninput="updateFinance()">
+            </div>
+
+            <div class="finance-grid">
+              <div class="finance-card"><div class="lab" data-i18n="proj_cost_lab">Project cost calc.</div><div class="num" id="projCost">₹10,00,000</div></div>
+              <div class="finance-card"><div class="lab" data-i18n="max_proj_lab">Max project cost</div><div class="num" id="maxProj">₹10,00,000</div></div>
+              <div class="finance-card"><div class="lab" data-i18n="loan_req_lab">Loan required</div><div class="num" id="loanReq">₹9,00,000</div></div>
+              <div class="finance-card"><div class="lab" data-i18n="surplus_lab">Monthly surplus (est.)</div><div class="num" id="surplus">₹8,400</div></div>
+            </div>
+
+            <p class="field-label" data-i18n="schemes_label">Matched schemes</p>
+            <p class="hint" data-i18n="scheme_tap_hint" style="margin-top:-10px;">Tap a scheme to see how it fits your numbers.</p>
+            <div class="scheme-card" data-scheme="term" onclick="chooseScheme(this,'term')">
+              <div class="top">
+                <span class="name-wrap"><span class="name" data-i18n="scheme1_name">Term Loan</span><span class="rec-pill" data-i18n="rec_pill">Recommended</span></span>
+                <span class="terms">8% · 7 yrs</span>
+              </div>
+              <div class="terms" data-i18n="scheme1_desc">₹1.4L–50L · 6-month moratorium</div>
+            </div>
+            <div class="scheme-card" data-scheme="micro" onclick="chooseScheme(this,'micro')">
+              <div class="top">
+                <span class="name-wrap"><span class="name" data-i18n="scheme2_name">Micro Finance</span><span class="rec-pill" data-i18n="rec_pill">Recommended</span></span>
+                <span class="terms">6.5% · 3 yrs</span>
+              </div>
+              <div class="terms" data-i18n="scheme2_desc">Up to ₹1.4L · 3-month moratorium</div>
+            </div>
+
+            <div class="scheme-analysis" id="schemeAnalysis">
+              <p class="field-label" data-i18n="scheme_analysis_label" style="margin-top:14px;">How it fits your numbers</p>
+              <div class="list-row"><span class="l" data-i18n="loan_req_lab">Loan required</span><span class="v" id="schemeLoanReq">₹9,00,000</span></div>
+              <div class="list-row"><span class="l" id="schemeCapLabel">Term Loan band</span><span class="v" id="schemeCapValue">₹1.4L – ₹50L</span></div>
+              <div class="list-row"><span class="l" id="schemeFitLabel">Fits the band?</span><span class="v" id="schemeFitValue">Yes — fully covered</span></div>
+
+              <div class="chain-suggestion">
+                <span class="tag" data-i18n="suggested_label">Suggested for you</span>
+                <p id="schemeSuggestionText">Term Loan — it covers your full loan requirement within the ₹1.4L–50L band.</p>
+                <p class="gap-note" id="schemeGapNote" style="display:none;"></p>
+              </div>
+            </div>
+
+            <button class="primary-btn" data-i18n="generate_report_btn" onclick="goTo('final')" style="margin-top:14px;">Generate personalized report</button>
+            <button class="ghost-btn" data-i18n="back_btn" onclick="goTo('report')">Back</button>
+          </div>
+        </div>
+
+        <!-- SCREEN 7: final -->
+        <div class="screen" data-screen="final">
+          <div class="app-bar">
+            <p class="eyebrow" data-i18n="step7_eyebrow">Step 7 of 7</p>
+            <h2 data-i18n="step7_title">Your personalized report</h2>
+          </div>
+          <div class="screen-body">
+            <div class="rec-banner">
+              <div class="k" data-i18n="rec_k">Final recommendation</div>
+              <h3 data-i18n="rec_h3">Proceed — strong fit for Kondhali</h3>
+            </div>
+
+            <div class="tab-row">
+              <button class="tab-btn active" data-tab="map" data-i18n="tab_map" onclick="switchTab(this,'map')">Map</button>
+              <button class="tab-btn" data-tab="alt" data-i18n="tab_alt" onclick="switchTab(this,'alt')">Alternatives</button>
+              <button class="tab-btn" data-tab="road" data-i18n="tab_road" onclick="switchTab(this,'road')">Roadmap</button>
+            </div>
+
+            <div class="tab-pane active" data-pane="map">
+              <div class="map-mock">
+                <svg viewBox="0 0 300 160">
+                  <rect width="300" height="160" fill="#EEF1E6"/>
+                  <path d="M0 90 C60 60,120 120,180 80 S280 40,300 70" stroke="#C9C2A8" stroke-width="3" fill="none"/>
+                  <circle cx="150" cy="82" r="7" fill="#1F3A5F"/>
+                  <circle cx="90" cy="60" r="4" fill="#B4552F" opacity="0.75"/>
+                  <circle cx="205" cy="105" r="4" fill="#B4552F" opacity="0.75"/>
+                  <circle cx="230" cy="55" r="4" fill="#3F6B4C" opacity="0.85"/>
+                  <text x="150" y="70" font-size="9" fill="#1F3A5F" font-family="Work Sans" text-anchor="middle" id="mapYouLabel">You</text>
+                </svg>
+              </div>
+              <div class="list-row"><span class="l" data-i18n="competitors_l">Competitors (5km)</span><span class="v" data-i18n="competitors_v">2 unregistered</span></div>
+              <div class="list-row"><span class="l" data-i18n="raw_material_l">Nearest raw material</span><span class="v">3.2 km</span></div>
+            </div>
+
+            <div class="tab-pane" data-pane="alt">
+              <div class="list-row"><span class="l" data-i18n="alt1_l">Alt. product line</span><span class="v" data-i18n="alt1_v">Ghee, curd</span></div>
+              <div class="list-row"><span class="l" data-i18n="alt2_l">Alt. distribution</span><span class="v" data-i18n="alt2_v">Direct to 2 nearby markets</span></div>
+              <div class="list-row"><span class="l" data-i18n="alt3_l">Alt. value chain</span><span class="v" data-i18n="alt3_v">Skip wholesaler, sell direct</span></div>
+            </div>
+
+            <div class="tab-pane" data-pane="road">
+              <div class="list-row"><span class="l" data-i18n="road1_l">Project cost</span><span class="v">₹10,00,000</span></div>
+              <div class="list-row"><span class="l" data-i18n="road2_l">Loan (Term Loan)</span><span class="v">₹9,00,000</span></div>
+              <div class="list-row"><span class="l" data-i18n="road3_l">Moratorium</span><span class="v" data-i18n="road3_v">6 months</span></div>
+              <div class="list-row"><span class="l" data-i18n="road4_l">Est. repayment start</span><span class="v" data-i18n="road4_v">Month 7</span></div>
+            </div>
+
+            <button class="ghost-btn" data-i18n="back_btn" onclick="goTo('finance')" style="margin-top:16px;">Back</button>
+          </div>
+        </div>
+
+      </div>
+      <p style="font-size:11.5px; color:var(--ink-soft); margin-top:14px; text-align:center; max-width:340px;" data-i18n="prototype_note">Prototype for demo purposes — figures are illustrative, not live data.</p>
+    </div>
+
+    <!-- side panel -->
+    <div class="side-panel">
+      <div class="side-card">
+        <span class="note-tag">Why this flow</span>
+        <h4>Voice-first, then structured</h4>
+        <p>Rural users describe their idea in their own words and language first. NLP does the structuring — the user never has to know what a "subcategory" is.</p>
+      </div>
+      <div class="side-card">
+        <span class="note-tag">What's under the hood</span>
+        <h4>Engines powering each screen</h4>
+        <ul>
+          <li>Hyper-local data engine → geographic, demographic, seasonal</li>
+          <li>Business structuring → category, value chain mapping</li>
+          <li>Smart financial engine → loan &amp; repayment calculators</li>
+          <li>AI decision engine → final recommendation</li>
+        </ul>
+      </div>
+      <div class="side-card">
+        <span class="note-tag">Try it</span>
+        <p>Click any step on the left rail, or use the buttons inside the phone to move through the journey. Tap English / हिंदी / मराठी on screen 1 to see the whole app switch language.</p>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  const order = ['lang','onboard','idea','decision','report','finance','final'];
+
+  const translations = {
+    en: {
+      welcome_eyebrow: "Welcome",
+      welcome_title: "Let's set up your advisor",
+      choose_lang: "Choose your language",
+      talk_mode_label: "How would you like to talk to Gramvistaar?",
+      mode_voice: "🎙️ Voice",
+      mode_text: "⌨️ Text",
+      continue_btn: "Continue",
+      back_btn: "Back",
+
+      step2_eyebrow: "Step 2 of 7",
+      step2_title: "Tell us where &amp; how much",
+      village_label: "Village / Gram Panchayat",
+      village_value: "Kondhali, Nagpur Block",
+      village_hint: "We'll use your phone's GPS to pull local demand, roads and competitor data for a 5–10 km radius.",
+      capital_label: "Capital available for investment",
+      capital_hint: "This sets your maximum project size and loan eligibility.",
+
+      step3_eyebrow: "Step 3 of 7",
+      step3_title: "Describe your business idea",
+      mic_btn: '🎙️ Tap and speak — "I want to start a dairy business"',
+      or_type_hint: "Or type instead —",
+      idea_input_value: "I want to start a dairy business — milk and paneer",
+      nlp_understood_label: "Gramvistaar understood:",
+      tag_category: "Category: Agriculture",
+      tag_subcategory: "Subcategory: Dairy",
+      tag_product: "Product: Milk, Paneer",
+
+      step4_eyebrow: "Step 4 of 7",
+      step4_title: "Is this already running?",
+      decision_no_k: "NO — NEW IDEA",
+      decision_no_h3: "Potential market gap",
+      decision_no_p: "We'll scan your value chain for unserved niches and estimate a fresh opportunity around dairy in Kondhali.",
+      decision_yes_k: "YES — RUNNING ALREADY",
+      decision_yes_h3: "Existing business analysis",
+      decision_yes_p: "We'll check which parts of your producer → consumer chain are actually active — not assume the full chain exists — then flag any overcrowded segment or suggest a similar alternative if none connects.",
+      see_report_btn: "See feasibility report",
+
+      chain_check_label: "Chain connection check",
+      chain_check_hint: "Every business doesn't run the full producer → wholesaler → retailer → consumer chain — here's what we found for yours.",
+      seg1_l: "Producer → Processor",
+      seg1_v: "Active",
+      seg2_l: "Processor → Wholesaler",
+      seg2_v: "Active",
+      seg3_l: "Wholesaler → Retailer",
+      seg3_v: "Saturated · 7 sellers within 5 km",
+      seg4_l: "Retailer → Consumer",
+      seg4_v: "Underserved · gap found",
+      suggested_label: "Suggested for you",
+      chain_suggest_a: "Wholesaler → Retailer is overcrowded near Kondhali. Consider skipping it and selling paneer directly to households (Retailer → Consumer) instead.",
+      chain_toggle_to_b: "See what happens when no chain exists →",
+      chain_no_chain_p: "No active dairy value-chain segments were detected around Kondhali for this business.",
+      alt_biz_label: "Similar-investment alternative",
+      alt_biz_name: "Poultry &amp; egg retail",
+      alt_biz_detail: "Project cost ≈ ₹9.6L — close to your dairy plan, with an active local chain within 4 km.",
+      chain_toggle_to_a: "← Back to the segment example",
+
+      step5_eyebrow: "Step 5 of 7",
+      step5_title: "Feasibility report",
+      market_status: "Market status: Opportunity",
+      viability_h3: "Viability score",
+      viability_p: "Above-average demand, moderate competition, raw material access within 4 km.",
+      swot_s_title: "Strengths",
+      swot_s_p: "Low competitor density, road access to 3 nearby villages",
+      swot_w_title: "Weaknesses",
+      swot_w_p: "No cold storage nearby, seasonal milk supply dips",
+      swot_o_title: "Opportunities",
+      swot_o_p: "Festival demand spikes, unmet paneer supply",
+      swot_t_title: "Threats",
+      swot_t_p: "Price undercutting by mobile milk vendors",
+      risk_label: "Risk &amp; mitigation",
+      risk1_l: "Perishability risk",
+      risk1_v: "Add small chiller unit",
+      risk2_l: "Seasonal demand dip",
+      risk2_v: "Diversify into ghee, curd",
+      continue_finance_btn: "Continue to financial engine",
+
+      step6_eyebrow: "Step 6 of 7",
+      step6_title: "Smart financial engine",
+      avail_capital_label: "Available capital",
+      proj_cost_lab: "Project cost calc.",
+      max_proj_lab: "Max project cost",
+      loan_req_lab: "Loan required",
+      surplus_lab: "Monthly surplus (est.)",
+      schemes_label: "Matched schemes",
+      scheme_tap_hint: "Tap a scheme to see how it fits your numbers.",
+      scheme1_name: "Term Loan",
+      scheme1_desc: "₹1.4L–50L · 6-month moratorium",
+      scheme2_name: "Micro Finance",
+      scheme2_desc: "Up to ₹1.4L · 3-month moratorium",
+      rec_pill: "Recommended",
+      scheme_analysis_label: "How it fits your numbers",
+      micro_cap_l: "Micro Finance cap",
+      term_band_l: "Term Loan band",
+      fits_cap_q: "Fits the cap?",
+      fits_band_q: "Fits the band?",
+      fits_yes_v: "Yes — fully covered",
+      fits_no_prefix: "No — short by ",
+      suggested_term_v: "Term Loan — it covers your full loan requirement within the ₹1.4L–50L band.",
+      suggested_micro_v: "Micro Finance — your requirement fits under the ₹1.4L cap, with a lower 6.5% rate and shorter term.",
+      micro_gap_note: "Selecting Micro Finance alone would leave a shortfall to fund from elsewhere.",
+      generate_report_btn: "Generate personalized report",
+
+      step7_eyebrow: "Step 7 of 7",
+      step7_title: "Your personalized report",
+      rec_k: "Final recommendation",
+      rec_h3: "Proceed — strong fit for Kondhali",
+      tab_map: "Map",
+      tab_alt: "Alternatives",
+      tab_road: "Roadmap",
+      map_you: "You",
+      competitors_l: "Competitors (5km)",
+      competitors_v: "2 unregistered",
+      raw_material_l: "Nearest raw material",
+      alt1_l: "Alt. product line",
+      alt1_v: "Ghee, curd",
+      alt2_l: "Alt. distribution",
+      alt2_v: "Direct to 2 nearby markets",
+      alt3_l: "Alt. value chain",
+      alt3_v: "Skip wholesaler, sell direct",
+      road1_l: "Project cost",
+      road2_l: "Loan (Term Loan)",
+      road3_l: "Moratorium",
+      road3_v: "6 months",
+      road4_l: "Est. repayment start",
+      road4_v: "Month 7",
+      prototype_note: "Prototype for demo purposes — figures are illustrative, not live data."
+    },
+    hi: {
+      welcome_eyebrow: "स्वागत है",
+      welcome_title: "आइए आपका सलाहकार सेट करें",
+      choose_lang: "अपनी भाषा चुनें",
+      talk_mode_label: "आप ग्रामविस्तार से कैसे बात करना चाहेंगे?",
+      mode_voice: "🎙️ आवाज़",
+      mode_text: "⌨️ टेक्स्ट",
+      continue_btn: "जारी रखें",
+      back_btn: "वापस",
+
+      step2_eyebrow: "चरण 2/7",
+      step2_title: "बताएं — कहाँ और कितनी पूंजी",
+      village_label: "गाँव / ग्राम पंचायत",
+      village_value: "कोंढाली, नागपुर ब्लॉक",
+      village_hint: "हम आपके फ़ोन के जीपीएस से 5–10 किमी के दायरे में स्थानीय मांग, सड़कें और प्रतिस्पर्धी डेटा लाएंगे।",
+      capital_label: "निवेश के लिए उपलब्ध पूंजी",
+      capital_hint: "इससे आपकी अधिकतम परियोजना राशि और ऋण पात्रता तय होगी।",
+
+      step3_eyebrow: "चरण 3/7",
+      step3_title: "अपना व्यवसाय विचार बताएं",
+      mic_btn: '🎙️ टैप करें और बोलें — "मुझे दूध और पनीर का काम शुरू करना है"',
+      or_type_hint: "या टाइप करें —",
+      idea_input_value: "मैं डेयरी व्यवसाय शुरू करना चाहता हूं — दूध और पनीर",
+      nlp_understood_label: "ग्रामविस्तार ने समझा:",
+      tag_category: "श्रेणी: कृषि",
+      tag_subcategory: "उप-श्रेणी: डेयरी",
+      tag_product: "उत्पाद: दूध, पनीर",
+
+      step4_eyebrow: "चरण 4/7",
+      step4_title: "क्या यह पहले से चल रहा है?",
+      decision_no_k: "नहीं — नया विचार",
+      decision_no_h3: "संभावित बाज़ार अंतर",
+      decision_no_p: "हम आपकी वैल्यू चेन में अछूते अवसर खोजेंगे और कोंढाली में डेयरी के लिए एक नया अवसर आंकेंगे।",
+      decision_yes_k: "हाँ — पहले से चल रहा है",
+      decision_yes_h3: "मौजूदा व्यवसाय विश्लेषण",
+      decision_yes_p: "हम जांचेंगे कि आपकी उत्पादक → उपभोक्ता श्रृंखला के कौन-से हिस्से वास्तव में सक्रिय हैं — पूरी श्रृंखला मौजूद है यह मान नहीं लेंगे — फिर अत्यधिक भीड़भाड़ वाले हिस्से को चिन्हित करेंगे या कोई हिस्सा न जुड़ने पर मिलता-जुलता विकल्प सुझाएंगे।",
+      see_report_btn: "व्यवहार्यता रिपोर्ट देखें",
+
+      chain_check_label: "श्रृंखला जुड़ाव जांच",
+      chain_check_hint: "हर व्यवसाय पूरी उत्पादक → थोक विक्रेता → खुदरा विक्रेता → उपभोक्ता श्रृंखला नहीं चलाता — आपके लिए हमें यह मिला:",
+      seg1_l: "उत्पादक → प्रोसेसर",
+      seg1_v: "सक्रिय",
+      seg2_l: "प्रोसेसर → थोक विक्रेता",
+      seg2_v: "सक्रिय",
+      seg3_l: "थोक विक्रेता → खुदरा विक्रेता",
+      seg3_v: "अत्यधिक भीड़ · 5 किमी में 7 विक्रेता",
+      seg4_l: "खुदरा विक्रेता → उपभोक्ता",
+      seg4_v: "अपर्याप्त सेवा · अवसर मिला",
+      suggested_label: "आपके लिए सुझाव",
+      chain_suggest_a: "कोंढाली के पास थोक विक्रेता → खुदरा विक्रेता हिस्सा अत्यधिक भीड़भाड़ वाला है। इसे छोड़कर पनीर सीधे घरों में बेचने (खुदरा विक्रेता → उपभोक्ता) पर विचार करें।",
+      chain_toggle_to_b: "जब कोई श्रृंखला मौजूद न हो तो क्या होता है, देखें →",
+      chain_no_chain_p: "इस व्यवसाय के लिए कोंढाली के आसपास कोई सक्रिय डेयरी वैल्यू-चेन हिस्सा नहीं मिला।",
+      alt_biz_label: "समान निवेश वाला विकल्प",
+      alt_biz_name: "पोल्ट्री और अंडा खुदरा",
+      alt_biz_detail: "परियोजना लागत ≈ ₹9.6 लाख — आपकी डेयरी योजना के करीब, 4 किमी के भीतर सक्रिय स्थानीय श्रृंखला के साथ।",
+      chain_toggle_to_a: "← हिस्सा उदाहरण पर वापस जाएं",
+
+      step5_eyebrow: "चरण 5/7",
+      step5_title: "व्यवहार्यता रिपोर्ट",
+      market_status: "बाज़ार स्थिति: अवसर",
+      viability_h3: "व्यवहार्यता स्कोर",
+      viability_p: "औसत से अधिक मांग, मध्यम प्रतिस्पर्धा, 4 किमी के भीतर कच्चा माल उपलब्ध।",
+      swot_s_title: "ताकत",
+      swot_s_p: "कम प्रतिस्पर्धी घनत्व, 3 नज़दीकी गाँवों तक सड़क पहुंच",
+      swot_w_title: "कमजोरियां",
+      swot_w_p: "पास में कोई कोल्ड स्टोरेज नहीं, मौसमी दूध आपूर्ति में गिरावट",
+      swot_o_title: "अवसर",
+      swot_o_p: "त्योहारों में मांग बढ़ती है, पनीर की आपूर्ति अधूरी",
+      swot_t_title: "खतरे",
+      swot_t_p: "मोबाइल दूध विक्रेताओं द्वारा कीमत में कटौती",
+      risk_label: "जोखिम और समाधान",
+      risk1_l: "खराब होने का जोखिम",
+      risk1_v: "छोटा चिलर यूनिट लगाएं",
+      risk2_l: "मौसमी मांग में गिरावट",
+      risk2_v: "घी, दही में विविधता लाएं",
+      continue_finance_btn: "वित्तीय इंजन पर जारी रखें",
+
+      step6_eyebrow: "चरण 6/7",
+      step6_title: "स्मार्ट वित्तीय इंजन",
+      avail_capital_label: "उपलब्ध पूंजी",
+      proj_cost_lab: "परियोजना लागत गणना",
+      max_proj_lab: "अधिकतम परियोजना लागत",
+      loan_req_lab: "आवश्यक ऋण",
+      surplus_lab: "मासिक अतिरिक्त (अनुमानित)",
+      schemes_label: "मिलान की गई योजनाएं",
+      scheme_tap_hint: "अपने आंकड़ों से मेल जानने के लिए किसी योजना पर टैप करें।",
+      scheme1_name: "टर्म लोन",
+      scheme1_desc: "₹1.4L–50L · 6 महीने की मोहलत",
+      scheme2_name: "माइक्रो फाइनेंस",
+      scheme2_desc: "₹1.4L तक · 3 महीने की मोहलत",
+      rec_pill: "अनुशंसित",
+      scheme_analysis_label: "यह आपके आंकड़ों से कैसे मेल खाता है",
+      micro_cap_l: "माइक्रो फाइनेंस सीमा",
+      term_band_l: "टर्म लोन दायरा",
+      fits_cap_q: "क्या यह सीमा में आता है?",
+      fits_band_q: "क्या यह दायरे में आता है?",
+      fits_yes_v: "हाँ — पूरी तरह कवर",
+      fits_no_prefix: "नहीं — इतना कम पड़ेगा: ",
+      suggested_term_v: "टर्म लोन — यह ₹1.4L–50L के दायरे में आपकी पूरी ऋण आवश्यकता को कवर करता है।",
+      suggested_micro_v: "माइक्रो फाइनेंस — आपकी आवश्यकता ₹1.4L की सीमा में आती है, कम 6.5% दर और छोटी अवधि के साथ।",
+      micro_gap_note: "केवल माइक्रो फाइनेंस चुनने पर एक कमी रह जाएगी, जिसे कहीं और से जुटाना होगा।",
+      generate_report_btn: "व्यक्तिगत रिपोर्ट बनाएं",
+
+      step7_eyebrow: "चरण 7/7",
+      step7_title: "आपकी व्यक्तिगत रिपोर्ट",
+      rec_k: "अंतिम सिफारिश",
+      rec_h3: "आगे बढ़ें — कोंढाली के लिए उपयुक्त",
+      tab_map: "नक्शा",
+      tab_alt: "विकल्प",
+      tab_road: "रोडमैप",
+      map_you: "आप",
+      competitors_l: "प्रतिस्पर्धी (5किमी)",
+      competitors_v: "2 अपंजीकृत",
+      raw_material_l: "निकटतम कच्चा माल",
+      alt1_l: "वैकल्पिक उत्पाद",
+      alt1_v: "घी, दही",
+      alt2_l: "वैकल्पिक वितरण",
+      alt2_v: "2 नज़दीकी बाज़ारों में सीधे",
+      alt3_l: "वैकल्पिक मूल्य श्रृंखला",
+      alt3_v: "थोक विक्रेता छोड़ें, सीधे बेचें",
+      road1_l: "परियोजना लागत",
+      road2_l: "ऋण (टर्म लोन)",
+      road3_l: "मोहलत अवधि",
+      road3_v: "6 महीने",
+      road4_l: "अनुमानित चुकौती शुरुआत",
+      road4_v: "महीना 7",
+      prototype_note: "प्रदर्शन हेतु प्रोटोटाइप — आंकड़े उदाहरणात्मक हैं, वास्तविक नहीं।"
+    },
+    mr: {
+      welcome_eyebrow: "स्वागत आहे",
+      welcome_title: "चला तुमचा सल्लागार सेट करूया",
+      choose_lang: "तुमची भाषा निवडा",
+      talk_mode_label: "तुम्हाला ग्रामविस्तारशी कसे बोलायचे आहे?",
+      mode_voice: "🎙️ आवाज",
+      mode_text: "⌨️ मजकूर",
+      continue_btn: "पुढे चला",
+      back_btn: "मागे",
+
+      step2_eyebrow: "पायरी 2/7",
+      step2_title: "कुठे आणि किती भांडवल ते सांगा",
+      village_label: "गाव / ग्रामपंचायत",
+      village_value: "कोंढाळी, नागपूर तालुका",
+      village_hint: "आम्ही तुमच्या फोनच्या जीपीएसद्वारे 5–10 किमी परिसरातील स्थानिक मागणी, रस्ते आणि स्पर्धक माहिती आणू.",
+      capital_label: "गुंतवणुकीसाठी उपलब्ध भांडवल",
+      capital_hint: "यामुळे तुमचा कमाल प्रकल्प आकार आणि कर्ज पात्रता ठरेल.",
+
+      step3_eyebrow: "पायरी 3/7",
+      step3_title: "तुमची व्यवसाय कल्पना सांगा",
+      mic_btn: '🎙️ टॅप करा आणि बोला — "मला दूध आणि पनीरचा व्यवसाय सुरू करायचा आहे"',
+      or_type_hint: "किंवा टाइप करा —",
+      idea_input_value: "मला दुग्ध व्यवसाय सुरू करायचा आहे — दूध आणि पनीर",
+      nlp_understood_label: "ग्रामविस्तारला समजले:",
+      tag_category: "श्रेणी: कृषी",
+      tag_subcategory: "उप-श्रेणी: दुग्धव्यवसाय",
+      tag_product: "उत्पादन: दूध, पनीर",
+
+      step4_eyebrow: "पायरी 4/7",
+      step4_title: "हे आधीच सुरू आहे का?",
+      decision_no_k: "नाही — नवीन कल्पना",
+      decision_no_h3: "संभाव्य बाजार तफावत",
+      decision_no_p: "आम्ही तुमच्या व्हॅल्यू चेनमधील न वापरलेल्या संधी शोधू आणि कोंढाळीतील दुग्धव्यवसायाच्या नव्या संधीचा अंदाज घेऊ.",
+      decision_yes_k: "होय — आधीच सुरू आहे",
+      decision_yes_h3: "विद्यमान व्यवसाय विश्लेषण",
+      decision_yes_p: "आम्ही तपासू की तुमच्या उत्पादक → ग्राहक साखळीचे कोणते भाग प्रत्यक्षात सक्रिय आहेत — संपूर्ण साखळी अस्तित्वात आहे असे गृहीत न धरता — नंतर जास्त गर्दी असलेला भाग चिन्हांकित करू किंवा कोणताही भाग न जुळल्यास तत्सम पर्याय सुचवू.",
+      see_report_btn: "व्यवहार्यता अहवाल पहा",
+
+      chain_check_label: "साखळी जोडणी तपासणी",
+      chain_check_hint: "प्रत्येक व्यवसाय संपूर्ण उत्पादक → घाऊक विक्रेता → किरकोळ विक्रेता → ग्राहक साखळी चालवत नाही — तुमच्यासाठी आम्हाला हे आढळले:",
+      seg1_l: "उत्पादक → प्रक्रिया करणारा",
+      seg1_v: "सक्रिय",
+      seg2_l: "प्रक्रिया करणारा → घाऊक विक्रेता",
+      seg2_v: "सक्रिय",
+      seg3_l: "घाऊक विक्रेता → किरकोळ विक्रेता",
+      seg3_v: "जास्त गर्दी · 5 किमीमध्ये 7 विक्रेते",
+      seg4_l: "किरकोळ विक्रेता → ग्राहक",
+      seg4_v: "अपुरी सेवा · संधी आढळली",
+      suggested_label: "तुमच्यासाठी सूचना",
+      chain_suggest_a: "कोंढाळीजवळ घाऊक विक्रेता → किरकोळ विक्रेता हा भाग जास्त गर्दीचा आहे. तो वगळून पनीर थेट घरांना विकण्याचा (किरकोळ विक्रेता → ग्राहक) विचार करा.",
+      chain_toggle_to_b: "साखळी अस्तित्वात नसताना काय होते ते पहा →",
+      chain_no_chain_p: "या व्यवसायासाठी कोंढाळीच्या आसपास कोणताही सक्रिय दुग्ध व्हॅल्यू-चेन भाग आढळला नाही.",
+      alt_biz_label: "समान गुंतवणुकीचा पर्याय",
+      alt_biz_name: "कुक्कुटपालन आणि अंडी किरकोळ विक्री",
+      alt_biz_detail: "प्रकल्प खर्च ≈ ₹9.6 लाख — तुमच्या दुग्ध योजनेच्या जवळ, 4 किमीच्या आत सक्रिय स्थानिक साखळीसह.",
+      chain_toggle_to_a: "← भाग उदाहरणाकडे परत जा",
+
+      step5_eyebrow: "पायरी 5/7",
+      step5_title: "व्यवहार्यता अहवाल",
+      market_status: "बाजार स्थिती: संधी",
+      viability_h3: "व्यवहार्यता गुण",
+      viability_p: "सरासरीपेक्षा जास्त मागणी, मध्यम स्पर्धा, 4 किमीच्या आत कच्चा माल उपलब्ध.",
+      swot_s_title: "सामर्थ्य",
+      swot_s_p: "कमी स्पर्धक घनता, 3 जवळच्या गावांपर्यंत रस्ता उपलब्ध",
+      swot_w_title: "कमकुवतपणा",
+      swot_w_p: "जवळपास कोल्ड स्टोरेज नाही, हंगामी दूध पुरवठ्यात घट",
+      swot_o_title: "संधी",
+      swot_o_p: "सणांच्या काळात मागणी वाढते, पनीर पुरवठा अपुरा",
+      swot_t_title: "धोके",
+      swot_t_p: "फिरत्या दूध विक्रेत्यांकडून किंमत कमी केली जाते",
+      risk_label: "जोखीम आणि उपाय",
+      risk1_l: "खराब होण्याचा धोका",
+      risk1_v: "लहान चिलर युनिट लावा",
+      risk2_l: "हंगामी मागणीत घट",
+      risk2_v: "तूप, दही मध्ये विविधता आणा",
+      continue_finance_btn: "आर्थिक इंजिनकडे पुढे जा",
+
+      step6_eyebrow: "पायरी 6/7",
+      step6_title: "स्मार्ट आर्थिक इंजिन",
+      avail_capital_label: "उपलब्ध भांडवल",
+      proj_cost_lab: "प्रकल्प खर्च गणना",
+      max_proj_lab: "कमाल प्रकल्प खर्च",
+      loan_req_lab: "आवश्यक कर्ज",
+      surplus_lab: "मासिक शिल्लक (अंदाजे)",
+      schemes_label: "जुळणाऱ्या योजना",
+      scheme_tap_hint: "तुमच्या आकड्यांशी जुळते का हे पाहण्यासाठी एखाद्या योजनेवर टॅप करा.",
+      scheme1_name: "टर्म कर्ज",
+      scheme1_desc: "₹1.4L–50L · 6 महिन्यांची सवलत",
+      scheme2_name: "मायक्रो फायनान्स",
+      scheme2_desc: "₹1.4L पर्यंत · 3 महिन्यांची सवलत",
+      rec_pill: "शिफारस केलेले",
+      scheme_analysis_label: "हे तुमच्या आकड्यांशी कसे जुळते",
+      micro_cap_l: "मायक्रो फायनान्स मर्यादा",
+      term_band_l: "टर्म कर्ज मर्यादा",
+      fits_cap_q: "मर्यादेत बसते का?",
+      fits_band_q: "मर्यादेत बसते का?",
+      fits_yes_v: "होय — पूर्णपणे कव्हर",
+      fits_no_prefix: "नाही — इतकी कमी पडेल: ",
+      suggested_term_v: "टर्म कर्ज — हे ₹1.4L–50L च्या मर्यादेत तुमची संपूर्ण कर्ज गरज भागवते.",
+      suggested_micro_v: "मायक्रो फायनान्स — तुमची गरज ₹1.4L च्या मर्यादेत बसते, कमी 6.5% दर आणि कमी कालावधीसह.",
+      micro_gap_note: "फक्त मायक्रो फायनान्स निवडल्यास तूट राहील, जी इतरत्र भरून काढावी लागेल.",
+      generate_report_btn: "वैयक्तिक अहवाल तयार करा",
+
+      step7_eyebrow: "पायरी 7/7",
+      step7_title: "तुमचा वैयक्तिक अहवाल",
+      rec_k: "अंतिम शिफारस",
+      rec_h3: "पुढे जा — कोंढाळीसाठी योग्य",
+      tab_map: "नकाशा",
+      tab_alt: "पर्याय",
+      tab_road: "रोडमॅप",
+      map_you: "तुम्ही",
+      competitors_l: "स्पर्धक (5किमी)",
+      competitors_v: "2 अनोंदणीकृत",
+      raw_material_l: "जवळचा कच्चा माल",
+      alt1_l: "पर्यायी उत्पादन",
+      alt1_v: "तूप, दही",
+      alt2_l: "पर्यायी वितरण",
+      alt2_v: "2 जवळच्या बाजारात थेट",
+      alt3_l: "पर्यायी मूल्य साखळी",
+      alt3_v: "घाऊक विक्रेता वगळा, थेट विक्री करा",
+      road1_l: "प्रकल्प खर्च",
+      road2_l: "कर्ज (टर्म कर्ज)",
+      road3_l: "सवलत कालावधी",
+      road3_v: "6 महिने",
+      road4_l: "अंदाजे परतफेड सुरुवात",
+      road4_v: "महिना 7",
+      prototype_note: "प्रात्यक्षिकासाठी प्रोटोटाइप — आकडे उदाहरणार्थ आहेत, प्रत्यक्ष नाहीत."
+    }
+  };
+
+  let currentLang = 'en';
+
+  function applyLanguage(lang){
+    currentLang = lang;
+    const dict = translations[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key = el.getAttribute('data-i18n');
+      if(dict[key] !== undefined) el.innerHTML = dict[key];
+    });
+    document.querySelectorAll('[data-i18n-value]').forEach(el=>{
+      const key = el.getAttribute('data-i18n-value');
+      if(dict[key] !== undefined) el.value = dict[key];
+    });
+    const mapLabel = document.getElementById('mapYouLabel');
+    if(mapLabel && dict.map_you) mapLabel.textContent = dict.map_you;
+    document.documentElement.lang = lang;
+
+    const capSliderEl = document.getElementById('capSlider');
+    if(capSliderEl){
+      const cap = parseInt(capSliderEl.value, 10);
+      renderSchemeAnalysis((cap / 0.10) * 0.90);
+    }
+  }
+
+  function goTo(screenId){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelector('.screen[data-screen="'+screenId+'"]').classList.add('active');
+    updateRail(screenId);
+    document.querySelector('.phone-wrap').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  function updateRail(screenId){
+    const idx = order.indexOf(screenId);
+    document.querySelectorAll('.rail-step').forEach(btn => {
+      const bIdx = order.indexOf(btn.dataset.screen);
+      btn.classList.remove('active','done');
+      if(bIdx === idx) btn.classList.add('active');
+      else if(bIdx < idx) btn.classList.add('done');
+    });
+  }
+
+  document.querySelectorAll('.rail-step').forEach(btn=>{
+    btn.addEventListener('click', ()=> goTo(btn.dataset.screen));
+  });
+  updateRail('lang');
+
+  // language chips
+  document.querySelectorAll('#langChips .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#langChips .chip').forEach(c=>c.classList.remove('selected'));
+      chip.classList.add('selected');
+      const lang = chip.getAttribute('data-lang') || 'en';
+      applyLanguage(lang);
+    });
+  });
+
+  // mode toggle
+  document.querySelectorAll('#modeToggle button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#modeToggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  function revealTags(){
+    document.getElementById('nlpTags').style.display = 'block';
+  }
+
+  function chooseDecision(el, type){
+    document.querySelectorAll('.decision-card').forEach(c=>c.classList.remove('chosen'));
+    el.classList.add('chosen');
+    const panel = document.getElementById('chainPanel');
+    panel.style.display = (type === 'yes') ? 'block' : 'none';
+  }
+
+  function toggleChainScenario(which){
+    document.getElementById('chainScenarioA').style.display = (which === 'a') ? 'block' : 'none';
+    document.getElementById('chainScenarioB').style.display = (which === 'b') ? 'block' : 'none';
+  }
+
+  // finance calculator
+  function formatINR(n){
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+
+  const MICRO_CAP = 140000;
+  let selectedScheme = 'term'; // which scheme card the user has tapped to inspect
+
+  function chooseScheme(el, scheme){
+    selectedScheme = scheme;
+    document.querySelectorAll('.scheme-card').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    const cap = parseInt(document.getElementById('capSlider').value, 10);
+    renderSchemeAnalysis((cap / 0.10) * 0.90);
+  }
+
+  function renderSchemeAnalysis(loanReq){
+    const dict = translations[currentLang];
+    const recommended = loanReq <= MICRO_CAP ? 'micro' : 'term';
+
+    document.querySelector('.scheme-card[data-scheme="term"]').classList.toggle('rec', recommended === 'term');
+    document.querySelector('.scheme-card[data-scheme="micro"]').classList.toggle('rec', recommended === 'micro');
+    document.querySelector('.scheme-card[data-scheme="term"]').classList.toggle('selected', selectedScheme === 'term');
+    document.querySelector('.scheme-card[data-scheme="micro"]').classList.toggle('selected', selectedScheme === 'micro');
+
+    document.getElementById('schemeLoanReq').textContent = formatINR(loanReq);
+
+    const capLabelEl = document.getElementById('schemeCapLabel');
+    const capValueEl = document.getElementById('schemeCapValue');
+    const fitLabelEl = document.getElementById('schemeFitLabel');
+    const fitValueEl = document.getElementById('schemeFitValue');
+
+    if(selectedScheme === 'micro'){
+      capLabelEl.textContent = dict.micro_cap_l;
+      capValueEl.textContent = '₹1,40,000';
+      fitLabelEl.textContent = dict.fits_cap_q;
+      if(loanReq <= MICRO_CAP){
+        fitValueEl.textContent = dict.fits_yes_v;
+        fitValueEl.style.color = '';
+      } else {
+        fitValueEl.textContent = dict.fits_no_prefix + formatINR(loanReq - MICRO_CAP);
+        fitValueEl.style.color = 'var(--clay)';
+      }
+    } else {
+      capLabelEl.textContent = dict.term_band_l;
+      capValueEl.textContent = '₹1.4L – ₹50L';
+      fitLabelEl.textContent = dict.fits_band_q;
+      fitValueEl.textContent = dict.fits_yes_v;
+      fitValueEl.style.color = '';
+    }
+
+    document.getElementById('schemeSuggestionText').textContent =
+      recommended === 'term' ? dict.suggested_term_v : dict.suggested_micro_v;
+
+    const gapNoteEl = document.getElementById('schemeGapNote');
+    if(selectedScheme === 'micro' && recommended === 'term'){
+      gapNoteEl.style.display = 'block';
+      gapNoteEl.textContent = dict.micro_gap_note;
+    } else {
+      gapNoteEl.style.display = 'none';
+    }
+  }
+
+  function updateFinance(){
+    const cap = parseInt(document.getElementById('capSlider').value, 10);
+    document.getElementById('capOut').textContent = formatINR(cap);
+    const projectCost = cap / 0.10; // capital ÷ 10%
+    const maxProject = projectCost;
+    const loan = projectCost * 0.90;
+    const surplus = projectCost * 0.0084; // illustrative ratio
+    document.getElementById('projCost').textContent = formatINR(projectCost);
+    document.getElementById('maxProj').textContent = formatINR(maxProject);
+    document.getElementById('loanReq').textContent = formatINR(loan);
+    document.getElementById('surplus').textContent = formatINR(surplus);
+    renderSchemeAnalysis(loan);
+  }
+  updateFinance();
+
+  // final report tabs
+  function switchTab(btn, tab){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    document.querySelector('.tab-pane[data-pane="'+tab+'"]').classList.add('active');
+  }
+
+  applyLanguage('en');
+</script>
+</body>
+</html>
